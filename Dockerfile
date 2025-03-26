@@ -169,6 +169,21 @@ RUN cd /usr/src && \
     git clone https://github.com/signalwire/freeswitch.git && \
     cd freeswitch && \
     ./bootstrap.sh -j && \
+    # Disable problematic modules
+    sed -i 's/applications\/mod_signalwire/#applications\/mod_signalwire/g' build/modules.conf.in && \
+    sed -i 's/endpoints\/mod_skinny/#endpoints\/mod_skinny/g' build/modules.conf.in && \
+    sed -i 's/endpoints\/mod_verto/#endpoints\/mod_verto/g' build/modules.conf.in && \
+    # Enable required modules
+    sed -i 's/#applications\/mod_callcenter/applications\/mod_callcenter/g' build/modules.conf.in && \
+    sed -i 's/#applications\/mod_cidlookup/applications\/mod_cidlookup/g' build/modules.conf.in && \
+    sed -i 's/#applications\/mod_memcache/applications\/mod_memcache/g' build/modules.conf.in && \
+    sed -i 's/#applications\/mod_curl/applications\/mod_curl/g' build/modules.conf.in && \
+    sed -i 's/#applications\/mod_nibblebill/applications\/mod_nibblebill/g' build/modules.conf.in && \
+    sed -i 's/#formats\/mod_shout/formats\/mod_shout/g' build/modules.conf.in && \
+    sed -i 's/#formats\/mod_pgsql/formats\/mod_pgsql/g' build/modules.conf.in && \
+    sed -i 's/#say\/mod_say_es/say\/mod_say_es/g' build/modules.conf.in && \
+    sed -i 's/#say\/mod_say_fr/say\/mod_say_fr/g' build/modules.conf.in && \
+    # Configure and build
     ./configure -C --enable-portable-binary \
                 --disable-dependency-tracking \
                 --prefix=/usr \
@@ -176,15 +191,18 @@ RUN cd /usr/src && \
                 --sysconfdir=/etc \
                 --with-openssl \
                 --enable-core-pgsql-support && \
-    # Install sounds
+    # Install
     make -j $(nproc) && \
     make install && \
+    # Install sounds
     make sounds-install moh-install && \
     make hd-sounds-install hd-moh-install && \
     make cd-sounds-install cd-moh-install && \
-    # Setup music directory properly
-    mkdir -p /usr/share/freeswitch/sounds/music/default && \
-    mv /usr/share/freeswitch/sounds/music/*000 /usr/share/freeswitch/sounds/music/default/ && \
+    # Setup music directory properly in vgtpbx directory
+    mkdir -p /etc/vgtpbx/media/fs/music/default && \
+    mv /usr/share/freeswitch/sounds/music/*000 /etc/vgtpbx/media/fs/music/default/ && \
+    rm -rf /usr/share/freeswitch/sounds/music && \
+    ln -s /etc/vgtpbx/media/fs/music /usr/share/freeswitch/sounds/music && \
     # Cleanup
     cd / && \
     rm -rf /usr/src/freeswitch
@@ -198,16 +216,41 @@ RUN cd /usr/src && \
     cd / && \
     rm -rf /usr/src/mod_bcg729
 
+# Move recordings and voicemail to vgtpbx directory
+RUN mkdir -p /etc/vgtpbx/media/fs/recordings && \
+    mkdir -p /etc/vgtpbx/media/fs/voicemail/default && \
+    rmdir /var/lib/freeswitch/recordings && \
+    ln -s /etc/vgtpbx/media/fs/recordings /var/lib/freeswitch/recordings && \
+    rm -rf /var/lib/freeswitch/storage/voicemail && \
+    ln -s /etc/vgtpbx/media/fs/voicemail /var/lib/freeswitch/storage/voicemail && \
+    chown -R vgtpbx:vgtpbx /etc/vgtpbx/media/fs/voicemail/default && \
+    chown -R vgtpbx:vgtpbx /etc/vgtpbx/media/fs/recordings
+
 # Create necessary directories and set permissions
 RUN mkdir -p /etc/freeswitch \
     /var/lib/freeswitch \
     /var/lib/freeswitch/storage \
-    /var/lib/freeswitch/recordings \
-    /var/lib/freeswitch/storage/voicemail \
-    /var/lib/freeswitch/storage/voicemail/default \
     /var/lib/freeswitch/db \
-    /var/lib/freeswitch/vm_db \
-    && chown -R vgtpbx:vgtpbx /usr/share/freeswitch/sounds
+    /var/lib/freeswitch/vm_db && \
+    # Setup FreeSWITCH configuration directory
+    mkdir -p /etc/vgtpbx/freeswitch && \
+    cp -r /etc/freeswitch/ /etc/vgtpbx/freeswitch/ && \
+    mv /etc/freeswitch /etc/freeswitch.orig && \
+    # Remove default configs that will be replaced
+    rm -r /etc/vgtpbx/freeswitch/autoload_configs && \
+    rm -r /etc/vgtpbx/freeswitch/dialplan && \
+    rm -r /etc/vgtpbx/freeswitch/chatplan && \
+    rm -r /etc/vgtpbx/freeswitch/directory && \
+    rm -r /etc/vgtpbx/freeswitch/sip_profiles && \
+    # Setup music directory properly in vgtpbx directory
+    mkdir -p /etc/vgtpbx/media/fs/music/default && \
+    mv /usr/share/freeswitch/sounds/music/*000 /etc/vgtpbx/media/fs/music/default/ && \
+    rm -rf /usr/share/freeswitch/sounds/music && \
+    ln -s /etc/vgtpbx/media/fs/music /usr/share/freeswitch/sounds/music && \
+    # Set permissions
+    chown -R vgtpbx:vgtpbx /usr/share/freeswitch/sounds && \
+    chown -R vgtpbx:vgtpbx /etc/vgtpbx/freeswitch && \
+    chown -R vgtpbx:vgtpbx /etc/vgtpbx/media/fs/music/*
 
 # Port exposure
 EXPOSE 5060/udp 5060/tcp    
