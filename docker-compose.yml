@@ -27,7 +27,7 @@ services:
       - "16384-32768:16384-32768/udp"  # RTP Media
     restart: unless-stopped
     networks:
-      - freeswitch-net
+      - vgtpbx-network
 
 volumes:
   freeswitch-config:
@@ -37,5 +37,5 @@ volumes:
   freeswitch-db:
 
 networks:
-  freeswitch-net:
+  vgtpbx-network:
     driver: bridge 
