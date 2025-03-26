@@ -81,7 +81,7 @@ RUN --mount=type=secret,id=signalwire_token \
 
 # Get mod_bcg729.so
 RUN wget -O /usr/lib/freeswitch/mod/mod_bcg729.so \
-    https://raw.githubusercontent.com/djangopbx/djangopbx-install.sh/master/binaries/mod_bcg729.so
+    https://github.com/vogatpbx/vgtpbx-install/raw/main/modules/mod_bcg729.so
 
 # Move recordings and voicemail
 RUN mkdir -p /etc/vgtpbx/media/fs/recordings && \
