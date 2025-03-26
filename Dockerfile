@@ -33,6 +33,35 @@ RUN apt-get update && apt-get install -y \
     autoconf \
     automake \
     uuid-dev \
+    # Additional dependencies for FreeSWITCH build
+    gdb \
+    libncurses5-dev \
+    libgdbm-dev \
+    libdb-dev \
+    gettext \
+    equivs \
+    mlocate \
+    dpkg-dev \
+    libpq-dev \
+    liblua5.2-dev \
+    libtiff5-dev \
+    libperl-dev \
+    libshout3-dev \
+    libmpg123-dev \
+    libmp3lame-dev \
+    yasm \
+    nasm \
+    libsndfile1-dev \
+    libuv1-dev \
+    libvpx-dev \
+    libavformat-dev \
+    libswscale-dev \
+    libvlc-dev \
+    python3-distutils \
+    flac \
+    libvpx7 \
+    swig4.0 \
+    devscripts \
     && rm -rf /var/lib/apt/lists/*
 
 # Build and install core dependencies in correct order
