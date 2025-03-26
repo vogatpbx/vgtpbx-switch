@@ -2,8 +2,8 @@
 FROM debian:12
 
 ENV DEBIAN_FRONTEND=noninteractive
-# ARG SIGNALWIRE_TOKEN
-# ENV SIGNALWIRE_TOKEN=${SIGNALWIRE_TOKEN}
+ARG SIGNALWIRE_TOKEN
+ENV SIGNALWIRE_TOKEN=${SIGNALWIRE_TOKEN}
 ARG SOFIA_VERSION=1.13.17
 ARG FREESWITCH_VERSION=1.10.10
 
@@ -20,8 +20,8 @@ RUN apt-get update && apt-get install -y \
 
 # FreeSWITCH installation from packages (this will pull in some dependencies)
 RUN --mount=type=secret,id=signalwire_token \
-    SIGNALWIRE_TOKEN=$(cat /run/secrets/signalwire_token) \
-    wget --http-user=signalwire --http-password=${SIGNALWIRE_TOKEN} \
+    export SIGNALWIRE_TOKEN=$(cat /run/secrets/signalwire_token) && \
+    wget --http-user=signalwire --http-password="${SIGNALWIRE_TOKEN}" \
     -O /usr/share/keyrings/signalwire-freeswitch-repo.gpg \
     https://freeswitch.signalwire.com/repo/deb/debian-release/signalwire-freeswitch-repo.gpg && \
     echo "machine freeswitch.signalwire.com login signalwire password ${SIGNALWIRE_TOKEN}" > /etc/apt/auth.conf && \

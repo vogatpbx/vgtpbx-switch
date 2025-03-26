@@ -13,9 +13,9 @@ services:
     image: vgtpbx-switch:latest
     container_name: vgtpbx-switch
     volumes:
-      - freeswitch-config:/etc/freeswitch
-      - freeswitch-recordings:/var/lib/freeswitch/recordings
-      - freeswitch-storage:/var/lib/freeswitch/storage
+      - freeswitch-config:/etc/vgtpbx/freeswitch
+      - freeswitch-recordings:/etc/vgtpbx/media/fs/recordings
+      - freeswitch-storage:/etc/vgtpbx/media/fs/storage
       - freeswitch-log:/var/log/freeswitch
       - freeswitch-db:/var/lib/freeswitch/db
     ports:
