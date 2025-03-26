@@ -1,0 +1,88 @@
+# Build stage
+FROM debian:12-slim as builder
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install only essential packages for building
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gnupg2 \
+    wget \
+    lsb-release \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Get FreeSWITCH packages
+RUN --mount=type=secret,id=signalwire_token \
+    export SIGNALWIRE_TOKEN=$(cat /run/secrets/signalwire_token) && \
+    wget --http-user=signalwire --http-password="${SIGNALWIRE_TOKEN}" \
+    -O /usr/share/keyrings/signalwire-freeswitch-repo.gpg \
+    https://freeswitch.signalwire.com/repo/deb/debian-release/signalwire-freeswitch-repo.gpg && \
+    echo "machine freeswitch.signalwire.com login signalwire password ${SIGNALWIRE_TOKEN}" > /etc/apt/auth.conf && \
+    echo "deb [signed-by=/usr/share/keyrings/signalwire-freeswitch-repo.gpg] https://freeswitch.signalwire.com/repo/deb/debian-release/ `lsb_release -sc` main" > /etc/apt/sources.list.d/freeswitch.list
+
+# Install FreeSWITCH with minimal packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    # Core packages (minimal)
+    freeswitch-meta-bare \
+    freeswitch-conf-vanilla \
+    freeswitch-meta-codecs \
+    # Essential modules only
+    freeswitch-mod-commands \
+    freeswitch-mod-console \
+    freeswitch-mod-logfile \
+    freeswitch-mod-distributor \
+    freeswitch-mod-sofia \
+    freeswitch-mod-event-socket \
+    freeswitch-mod-db \
+    freeswitch-mod-dptools \
+    freeswitch-mod-dialplan-xml \
+    # Minimal language support
+    freeswitch-lang-en \
+    freeswitch-mod-say-en \
+    # Core features
+    freeswitch-mod-conference \
+    freeswitch-mod-callcenter \
+    freeswitch-mod-xml-cdr \
+    freeswitch-mod-pgsql \
+    # Audio essentials
+    freeswitch-mod-native-file \
+    freeswitch-mod-tone-stream \
+    && rm -rf /var/lib/apt/lists/*
+
+# Get mod_bcg729 (smaller codec)
+RUN wget -O /usr/lib/freeswitch/mod/mod_bcg729.so \
+    https://github.com/vogatpbx/vgtpbx-install/raw/main/modules/mod_bcg729.so
+
+# Final stage
+FROM debian:12-slim
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Create vgtpbx user/group
+RUN groupadd -r vgtpbx && useradd -r -g vgtpbx vgtpbx
+
+# Copy FreeSWITCH files from builder
+COPY --from=builder /usr/lib/freeswitch /usr/lib/freeswitch
+COPY --from=builder /usr/share/freeswitch /usr/share/freeswitch
+COPY --from=builder /etc/freeswitch /etc/freeswitch.orig
+
+# Create necessary directories and symlinks
+RUN mkdir -p /etc/vgtpbx/freeswitch \
+    /etc/vgtpbx/media/fs/music/default \
+    /etc/vgtpbx/media/fs/recordings \
+    /etc/vgtpbx/media/fs/voicemail/default && \
+    cp -r /etc/freeswitch.orig/* /etc/vgtpbx/freeswitch/ && \
+    ln -s /etc/vgtpbx/freeswitch /etc/freeswitch && \
+    ln -s /etc/vgtpbx/media/fs/music /usr/share/freeswitch/sounds/music && \
+    chown -R vgtpbx:vgtpbx /usr/share/freeswitch/sounds \
+    /etc/vgtpbx/freeswitch \
+    /etc/vgtpbx/media
+
+# Port exposure
+EXPOSE 5060/udp 5060/tcp 5061/tcp 5080/udp 5080/tcp 5066/tcp 7443/tcp 8021/tcp 16384-32768/udp
+
+# Entrypoint setup
+COPY switch.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/switch.sh
+WORKDIR /etc/freeswitch
+ENTRYPOINT ["/usr/local/bin/switch.sh"]

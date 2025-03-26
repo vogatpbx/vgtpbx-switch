@@ -20,32 +20,7 @@ for dir in "${directories[@]}"; do
         echo "Creating directory: $dir"
         mkdir -p "$dir"
     fi
-    echo "Setting permissions for $dir"
-    chown -R vgtpbx:vgtpbx "$dir"
-    chmod -R 755 "$dir"
-done
-
-# Configuration Management
-# Backup original config
-if [ ! -d "/etc/freeswitch.orig" ] && [ -d "/etc/freeswitch" ]; then
-    echo "Backing up original FreeSWITCH configuration"
-    cp -r /etc/freeswitch /etc/freeswitch.orig
-fi
-
-# Remove default configs
-config_dirs=(
-    "autoload_configs"
-    "dialplan"
-    "chatplan"
-    "directory"
-    "sip_profiles"
-)
-
-for dir in "${config_dirs[@]}"; do
-    if [ -d "/etc/freeswitch/$dir" ]; then
-        echo "Removing default configuration: $dir"
-        rm -rf "/etc/freeswitch/$dir"
-    fi
+    chown vgtpbx:vgtpbx "$dir"
 done
 
 # Final Permission Setup

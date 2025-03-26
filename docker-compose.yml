@@ -3,14 +3,15 @@ version: '3.8'
 
 services:
   vgtpbx-switch:
+    profiles: ["small", "medium", "large"]
     build:
       context: .
+      dockerfile: ${DOCKERFILE:-Dockerfile.medium}  # Default to medium
       args:
-        - SOFIA_VERSION=1.13.17
-        - FREESWITCH_VERSION=1.10.10
+        - SIGNALWIRE_TOKEN
       secrets:
         - signalwire_token
-    image: vgtpbx-switch:latest
+    image: vgtpbx-switch:${SIZE:-medium}  # Default to medium
     container_name: vgtpbx-switch
     volumes:
       - freeswitch-config:/etc/vgtpbx/freeswitch
