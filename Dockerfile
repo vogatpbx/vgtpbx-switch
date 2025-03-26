@@ -139,11 +139,24 @@ RUN wget --http-user=signalwire --http-password=${SIGNALWIRE_TOKEN} \
 RUN cd /usr/src && \
     git clone https://github.com/signalwire/freeswitch.git && \
     cd freeswitch && \
+    ./bootstrap.sh -j && \
+    ./configure -C --enable-portable-binary \
+                --disable-dependency-tracking \
+                --prefix=/usr \
+                --localstatedir=/var \
+                --sysconfdir=/etc \
+                --with-openssl \
+                --enable-core-pgsql-support && \
+    # Install sounds
+    make -j $(nproc) && \
+    make install && \
     make sounds-install moh-install && \
     make hd-sounds-install hd-moh-install && \
     make cd-sounds-install cd-moh-install && \
+    # Setup music directory properly
     mkdir -p /usr/share/freeswitch/sounds/music/default && \
     mv /usr/share/freeswitch/sounds/music/*000 /usr/share/freeswitch/sounds/music/default/ && \
+    # Cleanup
     cd / && \
     rm -rf /usr/src/freeswitch
 
