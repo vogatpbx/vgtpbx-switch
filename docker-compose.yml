@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1.2
 version: '3.8'
 
 services:
@@ -5,8 +6,10 @@ services:
     build:
       context: .
       args:
-        - SIGNALWIRE_TOKEN=${SIGNALWIRE_TOKEN}
         - SOFIA_VERSION=1.13.17
+        - FREESWITCH_VERSION=1.10.10
+      secrets:
+        - signalwire_token
     image: vgtpbx-switch:latest
     container_name: vgtpbx-switch
     volumes:
@@ -38,4 +41,8 @@ volumes:
 
 networks:
   vgtpbx-network:
-    driver: bridge 
+    driver: bridge
+
+secrets:
+  signalwire_token:
+    file: ./signalwire.token 
