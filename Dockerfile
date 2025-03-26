@@ -32,6 +32,7 @@ RUN apt-get update && apt-get install -y \
     libjpeg-dev \
     autoconf \
     automake \
+    uuid-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Build and install core dependencies in correct order
