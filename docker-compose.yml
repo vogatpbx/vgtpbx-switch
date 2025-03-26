@@ -45,4 +45,4 @@ networks:
 
 secrets:
   signalwire_token:
-    file: ./signalwire.token 
+    environment: SIGNALWIRE_TOKEN
