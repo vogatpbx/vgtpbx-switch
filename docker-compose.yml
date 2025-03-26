@@ -3,7 +3,7 @@ version: '3.8'
 
 services:
   vgtpbx-switch:
-    profiles: ["small", "medium", "large"]
+    profiles: ["small", "medium", "large", "busybox"]
     build:
       context: .
       dockerfile: ${DOCKERFILE:-Dockerfile.medium}  # Default to medium
