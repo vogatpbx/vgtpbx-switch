@@ -92,25 +92,22 @@ RUN mkdir -p /etc/vgtpbx/media/fs/recordings && \
     ln -s /etc/vgtpbx/media/fs/voicemail /var/lib/freeswitch/storage/voicemail
 
 # Create necessary directories and set permissions
-RUN mkdir -p /etc/freeswitch \
-    /var/lib/freeswitch \
-    /var/lib/freeswitch/storage \
-    /var/lib/freeswitch/db \
-    /var/lib/freeswitch/vm_db && \
-    # Setup FreeSWITCH configuration directory
-    mkdir -p /etc/vgtpbx/freeswitch && \
-    cp -r /etc/freeswitch/ /etc/vgtpbx/freeswitch/ && \
-    mv /etc/freeswitch /etc/freeswitch.orig && \
-    ln -s /etc/vgtpbx/freeswitch /etc/freeswitch && \
-    # Remove default configs that will be replaced
-    rm -r /etc/vgtpbx/freeswitch/autoload_configs && \
-    rm -r /etc/vgtpbx/freeswitch/dialplan && \
-    rm -r /etc/vgtpbx/freeswitch/chatplan && \
-    rm -r /etc/vgtpbx/freeswitch/directory && \
-    rm -r /etc/vgtpbx/freeswitch/sip_profiles && \
-    # Setup music directory properly in vgtpbx directory
+RUN mkdir -p /etc/vgtpbx/freeswitch && \
     mkdir -p /etc/vgtpbx/media/fs/music/default && \
-    mv /usr/share/freeswitch/sounds/music/*000 /etc/vgtpbx/media/fs/music/default/ && \
+    # First copy the original config to vgtpbx
+    cp -r /etc/freeswitch/* /etc/vgtpbx/freeswitch/ && \
+    # Backup original config
+    mv /etc/freeswitch /etc/freeswitch.orig && \
+    # Create symlink
+    ln -s /etc/vgtpbx/freeswitch /etc/freeswitch && \
+    # Remove default configs that will be replaced (only if they exist)
+    rm -rf /etc/vgtpbx/freeswitch/autoload_configs 2>/dev/null || true && \
+    rm -rf /etc/vgtpbx/freeswitch/dialplan 2>/dev/null || true && \
+    rm -rf /etc/vgtpbx/freeswitch/chatplan 2>/dev/null || true && \
+    rm -rf /etc/vgtpbx/freeswitch/directory 2>/dev/null || true && \
+    rm -rf /etc/vgtpbx/freeswitch/sip_profiles 2>/dev/null || true && \
+    # Setup music directory
+    mv /usr/share/freeswitch/sounds/music/*000 /etc/vgtpbx/media/fs/music/default/ 2>/dev/null || true && \
     rm -rf /usr/share/freeswitch/sounds/music && \
     ln -s /etc/vgtpbx/media/fs/music /usr/share/freeswitch/sounds/music && \
     # Set permissions
