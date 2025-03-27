@@ -6,7 +6,7 @@ services:
     profiles: ["small", "medium", "large"]
     build:
       context: .
-      dockerfile: ${DOCKERFILE:-Dockerfile.small}  # Default to small
+      dockerfile: ${DOCKERFILE:-Dockerfile.small}
       args:
         - SIGNALWIRE_TOKEN
       secrets:
@@ -40,15 +40,6 @@ services:
     restart: unless-stopped
     networks:
       - vgtpbx-network
-
-  postgres:
-    image: vgtpbx-postgres:latest
-    container_name: vgtpbx-postgres
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
-      POSTGRES_DB: ${POSTGRES_DB:-vgtpbx}
-      PGDATA: /var/lib/postgresql/data/pgdata
 
 volumes:
   freeswitch-config:
