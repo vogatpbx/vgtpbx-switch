@@ -71,15 +71,15 @@ RUN mkdir -p /etc/vgtpbx/freeswitch \
     /etc/vgtpbx/media/fs/recordings \
     /etc/vgtpbx/media/fs/voicemail/default && \
     cp -r /etc/freeswitch.orig/* /etc/vgtpbx/freeswitch/ && \
-    ln -s /etc/vgtpbx/freeswitch /etc/freeswitch && \
-    chown -R vgtpbx:vgtpbx /etc/vgtpbx/freeswitch \
-    /etc/vgtpbx/media
+    ln -s /etc/vgtpbx/freeswitch /etc/freeswitch
+
+# Copy entrypoint script
+COPY switch.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/switch.sh && \
+    chown -R vgtpbx:vgtpbx /etc/vgtpbx
 
 # Port exposure
 EXPOSE 5060/udp 5060/tcp 5061/tcp 5080/udp 5080/tcp 5066/tcp 7443/tcp 8021/tcp 16384-32768/udp
 
-# Entrypoint setup
-COPY switch.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/switch.sh
 WORKDIR /etc/freeswitch
 ENTRYPOINT ["/usr/local/bin/switch.sh"]

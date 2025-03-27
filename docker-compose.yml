@@ -14,10 +14,11 @@ services:
     image: vgtpbx-switch:${SIZE:-small}
     container_name: vgtpbx-switch
     environment:
-      - POSTGRES_HOST=postgres
-      - POSTGRES_DB=${POSTGRES_DB:-vgtpbx}
-      - POSTGRES_USER=${POSTGRES_USER:-postgres}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-changeme}
+      - POSTGRES_HOST=vgtpbx-postgres
+      - POSTGRES_PORT=5432
+      - SWITCH_DB_NAME=freeswitch
+      - SWITCH_DB_USER=freeswitch
+      - SWITCH_DB_PASSWORD=${DATABASE_PASSWORD:-insecure12345}
       - FS_STARTUP_OPTIMIZATION=true
       - FREESWITCH_LOG_LEVEL=debug
     volumes:
@@ -35,7 +36,7 @@ services:
       - "5066:5066/tcp"  # WebSocket for WebRTC
       - "7443:7443/tcp"  # WebSocket TLS for WebRTC
       - "8021:8021/tcp"  # Event Socket
-      - "16384-16484:16384-16484/udp"  # Reduced RTP Media range
+      - "16384-16484:16384-16484/udp"  # RTP Media range
     healthcheck:
       test: ["CMD-SHELL", "fs_cli -x 'status' | grep -q 'UP' || exit 1"]
       interval: 30s
@@ -45,22 +46,18 @@ services:
     restart: unless-stopped
     networks:
       - vgtpbx-network
-    ulimits:
-      nofile:
-        soft: 65536
-        hard: 65536
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
 
 volumes:
   freeswitch-config:
+    name: vgtpbx-freeswitch-config
   freeswitch-recordings:
+    name: vgtpbx-freeswitch-recordings
   freeswitch-storage:
+    name: vgtpbx-freeswitch-storage
   freeswitch-log:
+    name: vgtpbx-freeswitch-log
   freeswitch-db:
+    name: vgtpbx-freeswitch-db
 
 networks:
   vgtpbx-network:
