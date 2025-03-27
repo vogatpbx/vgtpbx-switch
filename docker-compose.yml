@@ -49,15 +49,10 @@ services:
 
 volumes:
   freeswitch-config:
-    name: vgtpbx-freeswitch-config
   freeswitch-recordings:
-    name: vgtpbx-freeswitch-recordings
   freeswitch-storage:
-    name: vgtpbx-freeswitch-storage
   freeswitch-log:
-    name: vgtpbx-freeswitch-log
   freeswitch-db:
-    name: vgtpbx-freeswitch-db
 
 networks:
   vgtpbx-network:

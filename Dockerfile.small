@@ -71,7 +71,9 @@ RUN mkdir -p /etc/vgtpbx/freeswitch \
     /etc/vgtpbx/media/fs/recordings \
     /etc/vgtpbx/media/fs/voicemail/default && \
     cp -r /etc/freeswitch.orig/* /etc/vgtpbx/freeswitch/ && \
-    ln -s /etc/vgtpbx/freeswitch /etc/freeswitch
+    ln -s /etc/vgtpbx/freeswitch /etc/freeswitch && \
+    chown -R vgtpbx:vgtpbx /etc/vgtpbx/freeswitch \
+    /etc/vgtpbx/media
 
 # Copy entrypoint script
 COPY switch.sh /usr/local/bin/
