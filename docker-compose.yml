@@ -1,18 +1,26 @@
 # syntax=docker/dockerfile:1.2
-version: '3.8'
+version: '3.9'
 
 services:
   vgtpbx-switch:
-    profiles: ["small", "medium", "large", "busybox"]
+    profiles: ["small", "medium", "large"]
     build:
       context: .
-      dockerfile: ${DOCKERFILE:-Dockerfile.medium}  # Default to medium
+      dockerfile: ${DOCKERFILE:-Dockerfile.small}  # Default to small
       args:
         - SIGNALWIRE_TOKEN
       secrets:
         - signalwire_token
-    image: vgtpbx-switch:${SIZE:-medium}  # Default to medium
+    image: vgtpbx-switch:${SIZE:-small}
     container_name: vgtpbx-switch
+    depends_on:
+      postgres:
+        condition: service_healthy    # Ensures PostgreSQL is ready
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DB=${POSTGRES_DB:-vgtpbx}
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-changeme}
     volumes:
       - freeswitch-config:/etc/vgtpbx/freeswitch
       - freeswitch-recordings:/etc/vgtpbx/media/fs/recordings
@@ -32,6 +40,15 @@ services:
     restart: unless-stopped
     networks:
       - vgtpbx-network
+
+  postgres:
+    image: vgtpbx-postgres:latest
+    container_name: vgtpbx-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      POSTGRES_DB: ${POSTGRES_DB:-vgtpbx}
+      PGDATA: /var/lib/postgresql/data/pgdata
 
 volumes:
   freeswitch-config:

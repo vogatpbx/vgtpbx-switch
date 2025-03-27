@@ -1,5 +1,5 @@
 # Build stage
-FROM debian:12-slim as builder
+FROM debian:bookworm-slim as builder
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -54,7 +54,7 @@ RUN wget -O /usr/lib/freeswitch/mod/mod_bcg729.so \
     https://github.com/vogatpbx/vgtpbx-install/raw/main/modules/mod_bcg729.so
 
 # Final stage
-FROM debian:12-slim
+FROM debian:bookworm-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -68,14 +68,11 @@ COPY --from=builder /etc/freeswitch /etc/freeswitch.orig
 
 # Create necessary directories and symlinks
 RUN mkdir -p /etc/vgtpbx/freeswitch \
-    /etc/vgtpbx/media/fs/music/default \
     /etc/vgtpbx/media/fs/recordings \
     /etc/vgtpbx/media/fs/voicemail/default && \
     cp -r /etc/freeswitch.orig/* /etc/vgtpbx/freeswitch/ && \
     ln -s /etc/vgtpbx/freeswitch /etc/freeswitch && \
-    ln -s /etc/vgtpbx/media/fs/music /usr/share/freeswitch/sounds/music && \
-    chown -R vgtpbx:vgtpbx /usr/share/freeswitch/sounds \
-    /etc/vgtpbx/freeswitch \
+    chown -R vgtpbx:vgtpbx /etc/vgtpbx/freeswitch \
     /etc/vgtpbx/media
 
 # Port exposure
