@@ -64,7 +64,7 @@ volumes:
 
 networks:
   vgtpbx-network:
-    external: false
+    external: true
 
 secrets:
   signalwire_token:
