@@ -1,4 +1,6 @@
 #!/bin/bash
+set -e  # Exit on error
+set -x  # Print commands for debugging
 
 # Wait for PostgreSQL
 until PGPASSWORD=$SWITCH_DB_PASSWORD psql -h $POSTGRES_HOST -U $SWITCH_DB_USER -d $SWITCH_DB_NAME -c '\q' 2>/dev/null; do
@@ -30,9 +32,15 @@ done
 chown -R vgtpbx:vgtpbx /etc/vgtpbx/freeswitch
 chmod -R 755 /etc/vgtpbx/freeswitch
 
-# FreeSWITCH Startup
+# Debug info
+echo "Checking FreeSWITCH installation:"
+ls -la /usr/lib/freeswitch/mod/
+ls -la /etc/vgtpbx/freeswitch/
+id vgtpbx
+
+# FreeSWITCH Startup with debug
 echo "Starting FreeSWITCH..."
-exec freeswitch -u vgtpbx -g vgtpbx -nc -nf \
+exec freeswitch -u vgtpbx -g vgtpbx -nc -nf -nonat \
     -conf /etc/vgtpbx/freeswitch \
     -log /var/log/freeswitch \
     -db /var/lib/freeswitch/db \

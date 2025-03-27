@@ -36,7 +36,7 @@ services:
       - "5066:5066/tcp"  # WebSocket for WebRTC
       - "7443:7443/tcp"  # WebSocket TLS for WebRTC
       - "8021:8021/tcp"  # Event Socket
-      - "16384-16484:16384-16484/udp"  # RTP Media range
+      - "16384-32768:16384-32768/udp"   # RTP Media range
     healthcheck:
       test: ["CMD-SHELL", "fs_cli -x 'status' | grep -q 'UP' || exit 1"]
       interval: 30s
@@ -46,6 +46,9 @@ services:
     restart: unless-stopped
     networks:
       - vgtpbx-network
+    depends_on:
+      vgtpbx-postgres:
+        condition: service_healthy
 
 volumes:
   freeswitch-config:
