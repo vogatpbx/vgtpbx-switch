@@ -66,22 +66,41 @@ COPY --from=builder /usr/lib/freeswitch /usr/lib/freeswitch
 COPY --from=builder /usr/share/freeswitch /usr/share/freeswitch
 COPY --from=builder /etc/freeswitch /etc/freeswitch.orig
 
-# Create necessary directories and symlinks
-RUN mkdir -p /etc/vgtpbx/freeswitch \
+# Create necessary directories and set permissions
+RUN mkdir -p \
+    /etc/vgtpbx/freeswitch \
     /etc/vgtpbx/media/fs/recordings \
-    /etc/vgtpbx/media/fs/voicemail/default && \
+    /etc/vgtpbx/media/fs/storage \
+    /etc/vgtpbx/media/fs/voicemail/default \
+    /var/log/freeswitch \
+    /var/lib/freeswitch/db \
+    /var/run/freeswitch && \
     cp -r /etc/freeswitch.orig/* /etc/vgtpbx/freeswitch/ && \
     ln -s /etc/vgtpbx/freeswitch /etc/freeswitch && \
-    chown -R vgtpbx:vgtpbx /etc/vgtpbx/freeswitch \
-    /etc/vgtpbx/media
+    chown -R vgtpbx:vgtpbx \
+        /etc/vgtpbx \
+        /var/log/freeswitch \
+        /var/lib/freeswitch \
+        /var/run/freeswitch && \
+    chmod -R 755 \
+        /etc/vgtpbx/freeswitch \
+        /etc/vgtpbx/media \
+        /var/log/freeswitch \
+        /var/lib/freeswitch \
+        /var/run/freeswitch
 
-# Copy entrypoint script
-COPY switch.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/switch.sh && \
-    chown -R vgtpbx:vgtpbx /etc/vgtpbx
+# Copy entrypoint script to working directory
+COPY switch.sh /
+RUN chmod +x switch.sh
 
 # Port exposure
-EXPOSE 5060/udp 5060/tcp 5061/tcp 5080/udp 5080/tcp 5066/tcp 7443/tcp 8021/tcp 16384-32768/udp
+EXPOSE 8021/tcp
+EXPOSE 5060/tcp 5060/udp 5080/tcp 5080/udp
+EXPOSE 5061/tcp 5061/udp 5081/tcp 5081/udp
+EXPOSE 7443/tcp
+EXPOSE 5070/udp 5070/tcp
+EXPOSE 64535-65535/udp
+EXPOSE 16384-32768/udp
 
 WORKDIR /etc/freeswitch
-ENTRYPOINT ["/usr/local/bin/switch.sh"]
+ENTRYPOINT ["/switch.sh"]

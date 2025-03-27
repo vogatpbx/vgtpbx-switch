@@ -9,38 +9,15 @@ until PGPASSWORD=$SWITCH_DB_PASSWORD psql -h $POSTGRES_HOST -U $SWITCH_DB_USER -
 done
 echo "PostgreSQL is ready!"
 
-# Directory Management
-directories=(
-    "/etc/vgtpbx/freeswitch"
-    "/etc/vgtpbx/media/fs/recordings"
-    "/etc/vgtpbx/media/fs/storage"
-    "/var/log/freeswitch"
-    "/var/lib/freeswitch/db"
-    "/var/run/freeswitch"
-)
-
-# Create directories and set permissions
-for dir in "${directories[@]}"; do
-    if [ ! -d "$dir" ]; then
-        echo "Creating directory: $dir"
-        mkdir -p "$dir"
-    fi
-    chown vgtpbx:vgtpbx "$dir"
-done
-
-# Final Permission Setup
-chown -R vgtpbx:vgtpbx /etc/vgtpbx/freeswitch
-chmod -R 755 /etc/vgtpbx/freeswitch
-
 # Debug info
 echo "Checking FreeSWITCH installation:"
 ls -la /usr/lib/freeswitch/mod/
 ls -la /etc/vgtpbx/freeswitch/
 id vgtpbx
 
-# FreeSWITCH Startup with debug
+# FreeSWITCH Startup
 echo "Starting FreeSWITCH..."
-exec freeswitch -u vgtpbx -g vgtpbx -nc -nf -nonat \
+exec freeswitch -u vgtpbx -g vgtpbx -nonat -nc \
     -conf /etc/vgtpbx/freeswitch \
     -log /var/log/freeswitch \
     -db /var/lib/freeswitch/db \
