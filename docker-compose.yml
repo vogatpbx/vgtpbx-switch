@@ -18,6 +18,8 @@ services:
       - POSTGRES_DB=${POSTGRES_DB:-vgtpbx}
       - POSTGRES_USER=${POSTGRES_USER:-postgres}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-changeme}
+      - FS_STARTUP_OPTIMIZATION=true
+      - FREESWITCH_LOG_LEVEL=debug
     volumes:
       - freeswitch-config:/etc/vgtpbx/freeswitch
       - freeswitch-recordings:/etc/vgtpbx/media/fs/recordings
@@ -34,9 +36,24 @@ services:
       - "7443:7443/tcp"  # WebSocket TLS for WebRTC
       - "8021:8021/tcp"  # Event Socket
       - "16384-32768:16384-32768/udp"  # RTP Media
+    healthcheck:
+      test: ["CMD-SHELL", "fs_cli -x 'status' | grep -q 'UP' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s  
     restart: unless-stopped
     networks:
       - vgtpbx-network
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
   freeswitch-config:
@@ -47,7 +64,7 @@ volumes:
 
 networks:
   vgtpbx-network:
-    external: true    # Use external network defined in postgres compose
+    external: false
 
 secrets:
   signalwire_token:
