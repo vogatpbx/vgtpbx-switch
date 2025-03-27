@@ -89,9 +89,9 @@ RUN mkdir -p \
         /var/lib/freeswitch \
         /var/run/freeswitch
 
-# Copy entrypoint script to working directory
-COPY switch.sh /
-RUN chmod +x switch.sh
+# Copy entrypoint script to /usr/local/bin/
+COPY switch.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/switch.sh
 
 # Port exposure
 EXPOSE 8021/tcp
@@ -103,4 +103,4 @@ EXPOSE 64535-65535/udp
 EXPOSE 16384-32768/udp
 
 WORKDIR /etc/freeswitch
-ENTRYPOINT ["/switch.sh"]
+ENTRYPOINT ["/usr/local/bin/switch.sh"]
