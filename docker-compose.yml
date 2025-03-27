@@ -59,7 +59,7 @@ volumes:
 
 networks:
   vgtpbx-network:
-    driver: bridge
+    external: true    # Use external network defined in postgres compose
 
 secrets:
   signalwire_token:
