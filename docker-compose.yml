@@ -13,9 +13,6 @@ services:
         - signalwire_token
     image: vgtpbx-switch:${SIZE:-small}
     container_name: vgtpbx-switch
-    depends_on:
-      postgres:
-        condition: service_healthy    # Ensures PostgreSQL is ready
     environment:
       - POSTGRES_HOST=postgres
       - POSTGRES_DB=${POSTGRES_DB:-vgtpbx}
