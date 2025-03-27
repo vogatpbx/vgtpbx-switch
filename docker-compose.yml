@@ -22,11 +22,11 @@ services:
       - FS_STARTUP_OPTIMIZATION=true
       - FREESWITCH_LOG_LEVEL=debug
     volumes:
-      - freeswitch-config:/etc/vgtpbx/freeswitch
-      - freeswitch-recordings:/etc/vgtpbx/media/fs/recordings
-      - freeswitch-storage:/etc/vgtpbx/media/fs/storage
-      - freeswitch-log:/var/log/freeswitch
-      - freeswitch-db:/var/lib/freeswitch/db
+      - vgtpbx-freeswitch-config:/etc/vgtpbx/freeswitch
+      - vgtpbx-freeswitch-recordings:/etc/vgtpbx/media/fs/recordings
+      - vgtpbx-freeswitch-storage:/etc/vgtpbx/media/fs/storage
+      - vgtpbx-freeswitch-log:/var/log/freeswitch
+      - vgtpbx-freeswitch-db:/var/lib/freeswitch/db
     ports:
       - "5060:5060/udp"  # SIP UDP
       - "5060:5060/tcp"  # SIP TCP
@@ -46,16 +46,18 @@ services:
     restart: unless-stopped
     networks:
       - vgtpbx-network
-    depends_on:
-      vgtpbx-postgres:
-        condition: service_healthy
 
 volumes:
-  freeswitch-config:
-  freeswitch-recordings:
-  freeswitch-storage:
-  freeswitch-log:
-  freeswitch-db:
+  vgtpbx-freeswitch-config:
+    name: vgtpbx-freeswitch-config
+  vgtpbx-freeswitch-recordings:
+    name: vgtpbx-freeswitch-recordings
+  vgtpbx-freeswitch-storage:
+    name: vgtpbx-freeswitch-storage
+  vgtpbx-freeswitch-log:
+    name: vgtpbx-freeswitch-log
+  vgtpbx-freeswitch-db:
+    name: vgtpbx-freeswitch-db
 
 networks:
   vgtpbx-network:
