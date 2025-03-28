@@ -9,6 +9,16 @@ log() {
 
 log "Starting FreeSWITCH container..."
 
+# Install required runtime libraries
+log "Installing required runtime libraries..."
+apt-get update && apt-get install -y --no-install-recommends \
+    libcurl4 \
+    libfreetype6 \
+    libavcodec59 \
+    libavformat59 \
+    libswscale6 \
+    && rm -rf /var/lib/apt/lists/*
+
 # Configure FreeSWITCH based on FREESWITCH_CORE_IN_POSTGRES
 if [ "$FREESWITCH_CORE_IN_POSTGRES" = "yes" ]; then
     log "Updating FreeSWITCH configurations for PostgreSQL..."
