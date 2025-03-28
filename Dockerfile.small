@@ -6,7 +6,9 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Install only essential packages for building
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gnupg2 \
+    libpq-dev \
     wget \
+    curl memcached haveged apt-transport-https \
     lsb-release \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
@@ -24,9 +26,11 @@ RUN --mount=type=secret,id=signalwire_token \
 RUN apt-get update && apt-get install -y --no-install-recommends \
     # Core packages (minimal)
     freeswitch-meta-bare \
+    freeswitch-meta-minimal \
     freeswitch-conf-vanilla \
     freeswitch-meta-codecs \
     # Essential modules only
+    freeswitch-mod-enum \
     freeswitch-mod-commands \
     freeswitch-mod-console \
     freeswitch-mod-logfile \
@@ -60,7 +64,6 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Install PostgreSQL client and required libraries
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libpq5 \
     postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
