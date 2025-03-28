@@ -30,19 +30,19 @@ if [ "$FREESWITCH_CORE_IN_POSTGRES" = "yes" ]; then
     done
     
     # Update switch.conf.xml
-    sed -i 's|<!-- *<param name="core-db-dsn" value="\\\${dsn}" */ *-->|<param name="core-db-dsn" value="pgsql://hostaddr='"$POSTGRES_HOST"' dbname='"$SWITCH_DB_NAME"' user='"$SWITCH_DB_USER"' password='"'"$SWITCH_DB_PASSWORD"'"'" />|g' /etc/vgtpbx/freeswitch/autoload_configs/switch.conf.xml || echo "Failed to update switch.conf.xml"
+    sed -i 's|<!-- *<param name="core-db-dsn" value="\${dsn}" */ *-->|<param name="core-db-dsn" value="pgsql://hostaddr='"$POSTGRES_HOST"' dbname='"$SWITCH_DB_NAME"' user='"$SWITCH_DB_USER"' password='"\'$SWITCH_DB_PASSWORD\'"'" />|g' /etc/vgtpbx/freeswitch/autoload_configs/switch.conf.xml || echo "Failed to update switch.conf.xml"
     sed -i 's|<!-- *<param name="auto-create-schemas" value="false"/ *-->|<param name="auto-create-schemas" value="true"/>|g' /etc/vgtpbx/freeswitch/autoload_configs/switch.conf.xml
     sed -i 's|<!-- *<param name="auto-clear-sql" value="false"/ *-->|<param name="auto-clear-sql" value="true"/>|g' /etc/vgtpbx/freeswitch/autoload_configs/switch.conf.xml
     
     # Update voicemail.conf.xml
-    sed -i 's|<!--\(<param name="odbc-dsn" value="\\\${dsn}"/>\)-->|\1|g' /etc/vgtpbx/freeswitch/autoload_configs/voicemail.conf.xml
+    sed -i 's|<!--\(<param name="odbc-dsn" value="\${dsn}"/>\)-->|\1|g' /etc/vgtpbx/freeswitch/autoload_configs/voicemail.conf.xml
     sed -i 's|\(<param name="dbname" value="/var/lib/freeswitch/vm_db/voicemail_default.db"/>\)|<!--\1-->|g' /etc/vgtpbx/freeswitch/autoload_configs/voicemail.conf.xml
     
     # Update fifo.conf.xml
-    sed -i 's|<!--\(<param name="odbc-dsn" value="\\\${dsn}"/>\)-->|\1|g' /etc/vgtpbx/freeswitch/autoload_configs/fifo.conf.xml
+    sed -i 's|<!--\(<param name="odbc-dsn" value="\${dsn}"/>\)-->|\1|g' /etc/vgtpbx/freeswitch/autoload_configs/fifo.conf.xml
     
     # Update db.conf.xml
-    sed -i 's|<!--\(<param name="odbc-dsn" value="\\\${dsn}"/>\)-->|\1|g' /etc/vgtpbx/freeswitch/autoload_configs/db.conf.xml
+    sed -i 's|<!--\(<param name="odbc-dsn" value="\${dsn}"/>\)-->|\1|g' /etc/vgtpbx/freeswitch/autoload_configs/db.conf.xml
 
     # Update vars.xml for PostgreSQL
     log "Updating vars.xml for PostgreSQL configuration..."
@@ -51,8 +51,8 @@ if [ "$FREESWITCH_CORE_IN_POSTGRES" = "yes" ]; then
     # Add new DSN configurations before the closing </include>
     sed -i '/<\/include>/i \
     <!-- DSN Configuration -->\
-    <X-PRE-PROCESS cmd="set" data="dsn=pgsql://hostaddr='"$POSTGRES_HOST"' port=5432 dbname='"$SWITCH_DB_NAME"' user='"$SWITCH_DB_USER"' password='"'"$SWITCH_DB_PASSWORD"'"'" />\
-    <X-PRE-PROCESS cmd="set" data="dsn_callcenter=pgsql://hostaddr='"$POSTGRES_HOST"' port=5432 dbname='"$SWITCH_DB_NAME"' user='"$SWITCH_DB_USER"' password='"'"$SWITCH_DB_PASSWORD"'"'" />' /etc/vgtpbx/freeswitch/vars.xml
+    <X-PRE-PROCESS cmd="set" data="dsn=pgsql://hostaddr='"$POSTGRES_HOST"' port=5432 dbname='"$SWITCH_DB_NAME"' user='"$SWITCH_DB_USER"' password='"\'$SWITCH_DB_PASSWORD\'"'" />\
+    <X-PRE-PROCESS cmd="set" data="dsn_callcenter=pgsql://hostaddr='"$POSTGRES_HOST"' port=5432 dbname='"$SWITCH_DB_NAME"' user='"$SWITCH_DB_USER"' password='"\'$SWITCH_DB_PASSWORD\'"'" />' /etc/vgtpbx/freeswitch/vars.xml
 fi
 
 log "Waiting for PostgreSQL to be ready..."

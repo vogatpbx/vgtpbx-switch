@@ -58,6 +58,11 @@ FROM debian:bookworm-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+# Install PostgreSQL client library
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
+    && rm -rf /var/lib/apt/lists/*
+
 # Create vgtpbx user/group
 RUN groupadd -r vgtpbx && useradd -r -g vgtpbx vgtpbx
 
