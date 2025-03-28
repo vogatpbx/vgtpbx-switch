@@ -89,6 +89,7 @@ RUN mkdir -p \
         /var/lib/freeswitch \
         /var/run/freeswitch
 
+
 # Copy entrypoint script to /usr/local/bin/
 COPY switch.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/switch.sh

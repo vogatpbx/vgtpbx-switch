@@ -19,6 +19,7 @@ services:
       - SWITCH_DB_NAME=freeswitch
       - SWITCH_DB_USER=freeswitch
       - SWITCH_DB_PASSWORD=${DATABASE_PASSWORD:-insecure12345}
+      - FREESWITCH_CORE_IN_POSTGRES=yes 
       - FS_STARTUP_OPTIMIZATION=true
       - FREESWITCH_LOG_LEVEL=debug
     volumes:
