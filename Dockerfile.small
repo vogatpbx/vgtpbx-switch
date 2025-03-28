@@ -58,9 +58,10 @@ FROM debian:bookworm-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install PostgreSQL client library
+# Install PostgreSQL client and required libraries
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 \
+    postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
 # Create vgtpbx user/group
@@ -70,6 +71,8 @@ RUN groupadd -r vgtpbx && useradd -r -g vgtpbx vgtpbx
 COPY --from=builder /usr/lib/freeswitch /usr/lib/freeswitch
 COPY --from=builder /usr/share/freeswitch /usr/share/freeswitch
 COPY --from=builder /etc/freeswitch /etc/freeswitch.orig
+COPY --from=builder /usr/bin/freeswitch /usr/bin/freeswitch
+COPY --from=builder /usr/bin/fs_cli /usr/bin/fs_cli
 
 # Create necessary directories and set permissions
 RUN mkdir -p \
