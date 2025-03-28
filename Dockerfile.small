@@ -26,7 +26,6 @@ RUN --mount=type=secret,id=signalwire_token \
 RUN apt-get update && apt-get install -y --no-install-recommends \
     # Core packages (minimal)
     freeswitch-meta-bare \
-    freeswitch-meta-minimal \
     freeswitch-conf-vanilla \
     freeswitch-meta-codecs \
     # Essential modules only
