@@ -1,17 +1,25 @@
+# syntax=docker/dockerfile:1.2
 version: '3.9'
 
 services:
-  freeswitch:
+  vgtpbx-switch:
+    profiles: ["small", "medium", "large"]
     build:
       context: .
-      dockerfile: Dockerfile
-    image: vgtpbx-switch:latest
+      dockerfile: ${DOCKERFILE:-Dockerfile.small}
+      args:
+        - SIGNALWIRE_TOKEN
+      secrets:
+        - signalwire_token
+    image: vgtpbx-switch:${SIZE:-small}
     container_name: vgtpbx-switch
     environment:
       - POSTGRES_HOST=vgtpbx-postgres
+      - POSTGRES_PORT=5432
       - SWITCH_DB_NAME=freeswitch
       - SWITCH_DB_USER=freeswitch
-      - SWITCH_DB_PASSWORD=insecure12345
+      - SWITCH_DB_PASSWORD=${DATABASE_PASSWORD:-insecure12345}
+      - FREESWITCH_CORE_IN_POSTGRES=yes 
       - FS_STARTUP_OPTIMIZATION=true
       - FREESWITCH_LOG_LEVEL=debug
     volumes:
@@ -31,10 +39,10 @@ services:
       - "8021:8021/tcp"  # Event Socket
       - "16384-32768:16384-32768/udp"   # RTP Media range
     healthcheck:
-      test: ["CMD", "fs_cli", "-x", "status"]
-      interval: 15s
-      timeout: 5s
-      retries: 3
+      test: ["CMD-SHELL", "fs_cli -x 'status' | grep -q 'UP' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
       start_period: 60s
     restart: unless-stopped
     networks:
@@ -55,3 +63,7 @@ volumes:
 networks:
   vgtpbx-network:
     external: true
+
+secrets:
+  signalwire_token:
+    environment: SIGNALWIRE_TOKEN

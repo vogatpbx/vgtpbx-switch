@@ -17,6 +17,7 @@ apt-get update && apt-get install -y --no-install-recommends \
     libavcodec59 \
     libavformat59 \
     libswscale6 \
+    libpcre3 \
     && rm -rf /var/lib/apt/lists/*
 
 # Configure FreeSWITCH based on FREESWITCH_CORE_IN_POSTGRES
