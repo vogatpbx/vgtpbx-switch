@@ -1,12 +1,15 @@
 version: '3.9'
 
 services:
-  freeswitch:
+  vgtpbx-switch:
     build:
       context: .
       dockerfile: Dockerfile
     image: vgtpbx-switch:latest
     container_name: vgtpbx-switch
+    network_mode: "host"
+    extra_hosts:
+      - "vgtpbx-postgres:172.18.0.1" 
     environment:
       - POSTGRES_HOST=vgtpbx-postgres
       - SWITCH_DB_NAME=freeswitch
@@ -29,7 +32,7 @@ services:
       - "5066:5066/tcp"  # WebSocket for WebRTC
       - "7443:7443/tcp"  # WebSocket TLS for WebRTC
       - "8021:8021/tcp"  # Event Socket
-      - "16384-32768:16384-32768/udp"   # RTP Media range
+      #- "16384-32768:16384-32768/udp"   # RTP Media range
     healthcheck:
       test: ["CMD", "fs_cli", "-x", "status"]
       interval: 15s
@@ -37,8 +40,28 @@ services:
       retries: 3
       start_period: 60s
     restart: unless-stopped
-    networks:
-      - vgtpbx-network
+    cap_add:
+      - SYS_NICE
+      - NET_ADMIN
+      - NET_RAW
+      - SYS_RESOURCE
+      - IPC_LOCK
+    security_opt:
+      - seccomp:unconfined
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 999999
+        hard: 999999
+      core:
+        soft: -1
+        hard: -1
+      memlock:
+        soft: -1
+        hard: -1
+      rtprio:
+        soft: 99
+        hard: 99
 
 volumes:
   vgtpbx-freeswitch-config:
@@ -51,7 +74,3 @@ volumes:
     name: vgtpbx-freeswitch-log
   vgtpbx-freeswitch-db:
     name: vgtpbx-freeswitch-db
-
-networks:
-  vgtpbx-network:
-    external: true

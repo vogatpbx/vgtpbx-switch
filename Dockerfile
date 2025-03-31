@@ -2,7 +2,7 @@
 FROM debian:bookworm-slim as builder
 
 ENV DEBIAN_FRONTEND=noninteractive
-ARG TOKEN
+ARG TOKEN=pat_S8MZXQNM7CJEmDdQcN1UPvCc
 ARG FS_META_PACKAGE=freeswitch-meta-bare
 
 # explicitly set user/group IDs
@@ -21,6 +21,7 @@ RUN apt-get update -qq \
         postgresql-client \
         libpq-dev \
         netcat-traditional \
+        libcap2-bin \
     && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 \
     && rm -rf /var/lib/apt/lists/*
 
@@ -58,24 +59,29 @@ RUN mkdir -p \
     /etc/vgtpbx/media/fs/voicemail/default \
     /var/log/freeswitch \
     /var/lib/freeswitch/db \
-    /var/run/freeswitch \
     && cp -r /etc/freeswitch/* /etc/vgtpbx/freeswitch/ \
     && rm -rf /etc/freeswitch \
     && ln -s /etc/vgtpbx/freeswitch /etc/freeswitch \
+    && cd /etc/vgtpbx/freeswitch \
+    && mv directory/default/example.com.xml directory/default/example.com.xml.noload \
+    && mv sip_profiles/external-ipv6.xml sip_profiles/external-ipv6.xml.noload \
+    && mv sip_profiles/internal-ipv6.xml sip_profiles/internal-ipv6.xml.noload \
+    && sed -i 's|<param name="colorize" value="true"/>|<param name="colorize" value="false"/>|g' /etc/vgtpbx/freeswitch/autoload_configs/console.conf.xml \
     && chown -R vgtpbx:vgtpbx \
         /etc/vgtpbx \
         /var/log/freeswitch \
         /var/lib/freeswitch \
-        /var/run/freeswitch \
     && chmod -R 755 \
         /etc/vgtpbx/freeswitch \
         /etc/vgtpbx/media \
         /var/log/freeswitch \
-        /var/lib/freeswitch \
-        /var/run/freeswitch
+        /var/lib/freeswitch
 
 # Copy limits configuration
 COPY build/freeswitch.limits.conf /etc/security/limits.d/
+
+# Set capabilities for the FreeSWITCH binary
+RUN setcap 'cap_net_bind_service,cap_sys_nice,cap_sys_resource,cap_net_raw,cap_net_admin+ep' /usr/bin/freeswitch
 
 # Ports
 EXPOSE 8021/tcp
@@ -86,11 +92,6 @@ EXPOSE 7443/tcp
 EXPOSE 64535-65535/udp
 EXPOSE 16384-32768/udp
 
-# Volumes
-VOLUME ["/etc/vgtpbx/freeswitch"]
-VOLUME ["/etc/vgtpbx/media/fs"]
-VOLUME ["/var/log/freeswitch"]
-VOLUME ["/var/lib/freeswitch"]
 
 # Healthcheck
 HEALTHCHECK --interval=15s --timeout=5s \
@@ -100,4 +101,4 @@ COPY docker-entrypoint.sh /
 COPY build/config.sh /docker-entrypoint.d/
 RUN chmod +x /docker-entrypoint.d/config.sh
 ENTRYPOINT ["/docker-entrypoint.sh"]
-CMD ["freeswitch"]
+CMD ["vgtpbx-switch"]

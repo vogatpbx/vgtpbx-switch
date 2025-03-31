@@ -102,3 +102,19 @@ fi
 
 # Set proper permissions
 chown -R vgtpbx:vgtpbx /etc/vgtpbx/freeswitch/ 
+
+# Configure event socket to listen on container's network interface
+CONTAINER_IP=$(hostname -i || ip route get 1 | awk '{print $7}')
+log "Container IP: $CONTAINER_IP"
+
+# Update event_socket.conf.xml
+if [ -f "/etc/vgtpbx/freeswitch/autoload_configs/event_socket.conf.xml" ]; then
+    log "Updating event_socket.conf.xml to listen on 0.0.0.0"
+    sed -i "s|<param name=\"listen-ip\" value=\"::.*\"/>|<param name=\"listen-ip\" value=\"0.0.0.0\"/>|g" /etc/vgtpbx/freeswitch/autoload_configs/event_socket.conf.xml
+    
+    # Verify the change
+    log "Current event_socket.conf.xml configuration:"
+    grep "listen-ip" /etc/vgtpbx/freeswitch/autoload_configs/event_socket.conf.xml
+else
+    log "Warning: event_socket.conf.xml not found"
+fi 
