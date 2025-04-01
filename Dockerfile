@@ -2,7 +2,7 @@
 FROM debian:bookworm-slim as builder
 
 ENV DEBIAN_FRONTEND=noninteractive
-ARG TOKEN=pat_S8MZXQNM7CJEmDdQcN1UPvCc
+ARG TOKEN
 ARG FS_META_PACKAGE=freeswitch-meta-bare
 
 # explicitly set user/group IDs
@@ -26,7 +26,9 @@ RUN apt-get update -qq \
     && rm -rf /var/lib/apt/lists/*
 
 # Get FreeSWITCH packages
-RUN wget --no-verbose --http-user=signalwire --http-password=${TOKEN} \
+RUN --mount=type=secret,id=fs_token,target=/run/secrets/fs_token \
+    TOKEN=${FS_TOKEN:-$(cat /run/secrets/fs_token 2>/dev/null || echo "")} && \
+    wget --no-verbose --http-user=signalwire --http-password=${TOKEN} \
     -O /usr/share/keyrings/signalwire-freeswitch-repo.gpg \
     https://freeswitch.signalwire.com/repo/deb/debian-release/signalwire-freeswitch-repo.gpg \
     && echo "machine freeswitch.signalwire.com login signalwire password ${TOKEN}" > /etc/apt/auth.conf \
@@ -99,6 +101,7 @@ HEALTHCHECK --interval=15s --timeout=5s \
 
 COPY docker-entrypoint.sh /
 COPY build/config.sh /docker-entrypoint.d/
-RUN chmod +x /docker-entrypoint.d/config.sh
+RUN chmod +x /docker-entrypoint.sh && \
+    chmod +x /docker-entrypoint.d/config.sh
 ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["vgtpbx-switch"]
