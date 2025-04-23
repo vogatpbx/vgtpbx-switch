@@ -1,3 +1,5 @@
 install.sh
 .env*
 docker-postgres
+
+templates

@@ -5,6 +5,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        - FS_TOKEN
+      secrets:
+        - fs_token
     image: vgtpbx-switch:latest
     container_name: vgtpbx-switch
     network_mode: "host"
@@ -74,3 +78,7 @@ volumes:
     name: vgtpbx-freeswitch-log
   vgtpbx-freeswitch-db:
     name: vgtpbx-freeswitch-db
+
+secrets:
+  fs_token:
+    environment: FS_TOKEN

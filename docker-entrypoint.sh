@@ -29,8 +29,8 @@ if [ "$1" = 'vgtpbx-switch' ]; then
     fi
     
     # Verify module configuration
-    log "Verifying module configuration..."
-    grep -r "mod_pgsql" /etc/vgtpbx/freeswitch/autoload_configs/
+    #log "Verifying module configuration..."
+    #grep -r "mod_pgsql" /etc/vgtpbx/freeswitch/autoload_configs/
     
     exec gosu vgtpbx /usr/bin/freeswitch -u vgtpbx -g vgtpbx -nonat -c
 fi

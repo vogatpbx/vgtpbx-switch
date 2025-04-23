@@ -2,7 +2,7 @@
 FROM debian:bookworm-slim as builder
 
 ENV DEBIAN_FRONTEND=noninteractive
-ARG TOKEN
+ARG FS_TOKEN
 ARG FS_META_PACKAGE=freeswitch-meta-bare
 
 # explicitly set user/group IDs
@@ -22,8 +22,21 @@ RUN apt-get update -qq \
         libpq-dev \
         netcat-traditional \
         libcap2-bin \
+        iproute2 \
     && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 \
     && rm -rf /var/lib/apt/lists/*
+
+# Create VGTPBX directory structure first
+RUN mkdir -p \
+    /etc/vgtpbx/freeswitch \
+    /etc/vgtpbx/media/fs/recordings \
+    /etc/vgtpbx/media/fs/storage \
+    /etc/vgtpbx/media/fs/voicemail/default \
+    /var/log/freeswitch \
+    /var/lib/freeswitch/db
+
+# Copy templates before FreeSWITCH installation
+COPY ./templates /templates
 
 # Get FreeSWITCH packages
 RUN --mount=type=secret,id=fs_token,target=/run/secrets/fs_token \
@@ -44,31 +57,31 @@ RUN --mount=type=secret,id=fs_token,target=/run/secrets/fs_token \
         freeswitch-mod-sofia \
         freeswitch-mod-event-socket \
         freeswitch-lang-en \
+        freeswitch-mod-lua \
+        freeswitch-mod-loopback \
         freeswitch-mod-dptools \
         freeswitch-mod-dialplan-xml \
         freeswitch-mod-conference \
         freeswitch-mod-callcenter \
         freeswitch-mod-xml-cdr \
+        freeswitch-mod-curl \
+        freeswitch-mod-enum \
+        freeswitch-mod-xml-curl \
         freeswitch-mod-db \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 # Create VGTPBX directory structure and set up symlinks
-RUN mkdir -p \
-    /etc/vgtpbx/freeswitch \
-    /etc/vgtpbx/media/fs/recordings \
-    /etc/vgtpbx/media/fs/storage \
-    /etc/vgtpbx/media/fs/voicemail/default \
-    /var/log/freeswitch \
-    /var/lib/freeswitch/db \
-    && cp -r /etc/freeswitch/* /etc/vgtpbx/freeswitch/ \
+RUN cp -r /etc/freeswitch/* /etc/vgtpbx/freeswitch/ \
     && rm -rf /etc/freeswitch \
     && ln -s /etc/vgtpbx/freeswitch /etc/freeswitch \
     && cd /etc/vgtpbx/freeswitch \
-    && mv directory/default/example.com.xml directory/default/example.com.xml.noload \
-    && mv sip_profiles/external-ipv6.xml sip_profiles/external-ipv6.xml.noload \
-    && mv sip_profiles/internal-ipv6.xml sip_profiles/internal-ipv6.xml.noload \
-    && sed -i 's|<param name="colorize" value="true"/>|<param name="colorize" value="false"/>|g' /etc/vgtpbx/freeswitch/autoload_configs/console.conf.xml \
+    && rm -r autoload_configs \
+    && rm -r dialplan \
+    && rm -r chatplan \
+    && rm -r directory \
+    && rm -r sip_profiles \
+    && cp -r /templates/conf/* /etc/vgtpbx/freeswitch/ \
     && chown -R vgtpbx:vgtpbx \
         /etc/vgtpbx \
         /var/log/freeswitch \
