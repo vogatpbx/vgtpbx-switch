@@ -23,6 +23,7 @@ RUN apt-get update -qq \
         netcat-traditional \
         libcap2-bin \
         iproute2 \
+        nano \
     && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 \
     && rm -rf /var/lib/apt/lists/*
 
@@ -32,6 +33,8 @@ RUN mkdir -p \
     /etc/vgtpbx/media/fs/recordings \
     /etc/vgtpbx/media/fs/storage \
     /etc/vgtpbx/media/fs/voicemail/default \
+    /etc/vgtpbx/media/fs/sounds/music/default \
+    /etc/vgtpbx/media/fs/sounds/en \
     /var/log/freeswitch \
     /var/lib/freeswitch/db
 
@@ -55,9 +58,9 @@ RUN --mount=type=secret,id=fs_token,target=/run/secrets/fs_token \
         freeswitch-mod-console \
         freeswitch-mod-logfile \
         freeswitch-mod-sofia \
+        freeswitch-mod-sofia-dbg \
         freeswitch-mod-event-socket \
         freeswitch-lang-en \
-        freeswitch-mod-lua \
         freeswitch-mod-loopback \
         freeswitch-mod-dptools \
         freeswitch-mod-dialplan-xml \
@@ -68,8 +71,28 @@ RUN --mount=type=secret,id=fs_token,target=/run/secrets/fs_token \
         freeswitch-mod-enum \
         freeswitch-mod-xml-curl \
         freeswitch-mod-db \
+        freeswitch-mod-httapi \
+        freeswitch-mod-hash \
+        freeswitch-mod-voicemail \
+        freeswitch-meta-codecs \
+        freeswitch-mod-directory \
+        freeswitch-music-default \
+        freeswitch-mod-local-stream \
+        freeswitch-mod-tone-stream \
+        freeswitch-meta-mod-say \
+        freeswitch-mod-sndfile \
+        freeswitch-mod-native-file \ 
+        freeswitch-mod-say-en \ 
+        freeswitch-mod-spandsp \  
+        freeswitch-mod-opus \ 
+        freeswitch-mod-shout \ 
+        freeswitch-sounds-en-us-callie \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+# Get mod_bcg729.so
+RUN wget -O /usr/lib/freeswitch/mod/mod_bcg729.so \
+    https://github.com/vogatpbx/vgtpbx-install/raw/main/modules/mod_bcg729.so
 
 # Create VGTPBX directory structure and set up symlinks
 RUN cp -r /etc/freeswitch/* /etc/vgtpbx/freeswitch/ \
@@ -82,6 +105,10 @@ RUN cp -r /etc/freeswitch/* /etc/vgtpbx/freeswitch/ \
     && rm -r directory \
     && rm -r sip_profiles \
     && cp -r /templates/conf/* /etc/vgtpbx/freeswitch/ \
+    && cp -r /usr/share/freeswitch/sounds/music/* /etc/vgtpbx/media/fs/sounds/music/default/ \
+    && cp -r /usr/share/freeswitch/sounds/en/* /etc/vgtpbx/media/fs/sounds/en \
+    && rm -rf /usr/share/freeswitch/sounds \
+    && ln -s /etc/vgtpbx/media/fs/sounds /usr/share/freeswitch/sounds \
     && chown -R vgtpbx:vgtpbx \
         /etc/vgtpbx \
         /var/log/freeswitch \

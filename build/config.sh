@@ -18,24 +18,25 @@ else
 fi
 
 # Update vars.xml with PostgreSQL DSN
-sed -i '/<\/include>/i \
-<!-- DSN Configuration -->\
-<X-PRE-PROCESS cmd="set" data="dsn=pgsql://host='"$POSTGRES_HOST"' dbname='"$SWITCH_DB_NAME"' user='"$SWITCH_DB_USER"' password='"$SWITCH_DB_PASSWORD"'\" />' /etc/vgtpbx/freeswitch/vars.xml
+if ! grep -q "dsn=pgsql" /etc/vgtpbx/freeswitch/vars.xml; then
+    log "Adding DSN configuration to vars.xml..."
+    sed -i '/<\/include>/i \
+    <!-- DSN Configuration -->\
+    <X-PRE-PROCESS cmd="set" data="dsn=pgsql://host='"$POSTGRES_HOST"' dbname='"$SWITCH_DB_NAME"' user='"$SWITCH_DB_USER"' password='"$SWITCH_DB_PASSWORD"'\" />' /etc/vgtpbx/freeswitch/vars.xml
+else
+    log "DSN configuration already exists in vars.xml"
+fi
 
 # Update switch.conf.xml - First uncomment the line, then update it
-sed -i 's|<!-- *<param name="core-db-dsn" value=".*" */ *> *-->|<param name="core-db-dsn" value="\$\${dsn}"/>|g' /etc/vgtpbx/freeswitch/autoload_configs/switch.conf.xml
-sed -i 's|<!-- *<param name="auto-create-schemas" value=".*" */ *> *-->|<param name="auto-create-schemas" value="false"/>|g' /etc/vgtpbx/freeswitch/autoload_configs/switch.conf.xml
-sed -i 's|<!-- *<param name="auto-clear-sql" value=".*" */ *> *-->|<param name="auto-clear-sql" value="false"/>|g' /etc/vgtpbx/freeswitch/autoload_configs/switch.conf.xml
+if grep -q "<!-- *<param name=\"core-db-dsn\"" /etc/vgtpbx/freeswitch/autoload_configs/switch.conf.xml; then
+    log "Updating switch.conf.xml database configuration..."
+    sed -i 's|<!-- *<param name="core-db-dsn" value=".*" */ *> *-->|<param name="core-db-dsn" value="\$\${dsn}"/>|g' /etc/vgtpbx/freeswitch/autoload_configs/switch.conf.xml
+    sed -i 's|<!-- *<param name="auto-create-schemas" value=".*" */ *> *-->|<param name="auto-create-schemas" value="false"/>|g' /etc/vgtpbx/freeswitch/autoload_configs/switch.conf.xml
+    sed -i 's|<!-- *<param name="auto-clear-sql" value=".*" */ *> *-->|<param name="auto-clear-sql" value="false"/>|g' /etc/vgtpbx/freeswitch/autoload_configs/switch.conf.xml
+else
+    log "Warning: <param name=\"core-db-dsn\" not found in switch.conf.xml"
+fi
 
-# Disable odbc-dsn in config files with proper XML comments
-for file in db.conf.xml fifo.conf.xml voicemail.conf.xml; do
-    if [ -f "/etc/vgtpbx/freeswitch/autoload_configs/$file" ]; then
-        # First, remove any existing comments to avoid doubling
-        sed -i 's|<!--.*-->||g' "/etc/vgtpbx/freeswitch/autoload_configs/$file"
-        # Then add the proper comment
-        sed -i 's|<param name="odbc-dsn" value=".*"/>|<!-- <param name="odbc-dsn" value="${dsn}"/> -->|g' "/etc/vgtpbx/freeswitch/autoload_configs/$file"
-    fi
-done
 
 # Wait for PostgreSQL
 log "Waiting for PostgreSQL to be ready..."
