@@ -12,8 +12,6 @@ services:
     image: vgtpbx-switch:latest
     container_name: vgtpbx-switch
     network_mode: "host"
-    extra_hosts:
-      - "vgtpbx-postgres:172.18.0.1" 
     environment:
       - POSTGRES_HOST=vgtpbx-postgres
       - SWITCH_DB_NAME=freeswitch
@@ -26,7 +24,8 @@ services:
       - vgtpbx-freeswitch-recordings:/etc/vgtpbx/media/fs/recordings
       - vgtpbx-freeswitch-storage:/etc/vgtpbx/media/fs/storage
       - vgtpbx-freeswitch-log:/var/log/freeswitch
-      - vgtpbx-freeswitch-db:/var/lib/freeswitch/db
+    tmpfs:
+      - /var/lib/freeswitch/db:size=256m,noexec,nosuid,nodev
     ports:
       - "5060:5060/udp"  # SIP UDP
       - "5060:5060/tcp"  # SIP TCP
@@ -76,8 +75,6 @@ volumes:
     name: vgtpbx-freeswitch-storage
   vgtpbx-freeswitch-log:
     name: vgtpbx-freeswitch-log
-  vgtpbx-freeswitch-db:
-    name: vgtpbx-freeswitch-db
 
 secrets:
   fs_token:

@@ -19,7 +19,6 @@ services:
       - SWITCH_DB_NAME=freeswitch
       - SWITCH_DB_USER=freeswitch
       - SWITCH_DB_PASSWORD=${DATABASE_PASSWORD:-insecure12345}
-      - FREESWITCH_CORE_IN_POSTGRES=yes 
       - FS_STARTUP_OPTIMIZATION=true
       - FREESWITCH_LOG_LEVEL=debug
     volumes:
@@ -27,7 +26,8 @@ services:
       - vgtpbx-freeswitch-recordings:/etc/vgtpbx/media/fs/recordings
       - vgtpbx-freeswitch-storage:/etc/vgtpbx/media/fs/storage
       - vgtpbx-freeswitch-log:/var/log/freeswitch
-      - vgtpbx-freeswitch-db:/var/lib/freeswitch/db
+    tmpfs:
+      - /var/lib/freeswitch/db:size=256m,noexec,nosuid,nodev
     ports:
       - "5060:5060/udp"  # SIP UDP
       - "5060:5060/tcp"  # SIP TCP
@@ -57,8 +57,6 @@ volumes:
     name: vgtpbx-freeswitch-storage
   vgtpbx-freeswitch-log:
     name: vgtpbx-freeswitch-log
-  vgtpbx-freeswitch-db:
-    name: vgtpbx-freeswitch-db
 
 networks:
   vgtpbx-network:
