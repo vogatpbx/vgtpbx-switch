@@ -1,23 +1,11 @@
 version: '3.9'
 
-# Local development docker-compose for vgtpbx-switch (FreeSWITCH only)
-# 
-# vogat-eslserver is in a separate repository:
-# https://github.com/vogatpbx/vogat-eslserver
-#
-# For production deployment with both services, use docker-compose.prod.yml
-# which pulls pre-built images from GCP Artifact Registry.
+# Production docker-compose - uses pre-built images from GCP Artifact Registry
+# Deploy with: docker-compose -f docker-compose.prod.yml up -d
 
 services:
   vgtpbx-switch:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        - FS_TOKEN
-      secrets:
-        - fs_token
-    image: vgtpbx-switch:latest
+    image: northamerica-northeast1-docker.pkg.dev/dev-vgtpbx/vgtpbx-switch-docker/vgtpbx-switch:${VERSION:-latest}
     container_name: vgtpbx-switch
     network_mode: "host"
     environment:
@@ -35,15 +23,14 @@ services:
     tmpfs:
       - /var/lib/freeswitch/db:size=256m,noexec,nosuid,nodev
     ports:
-      - "5060:5060/udp" # SIP UDP
-      - "5060:5060/tcp" # SIP TCP
-      - "5061:5061/tcp" # SIP TLS
-      - "5080:5080/udp" # SIP UDP Alternative
-      - "5080:5080/tcp" # SIP TCP Alternative
-      - "5066:5066/tcp" # WebSocket for WebRTC
-      - "7443:7443/tcp" # WebSocket TLS for WebRTC
-      - "8021:8021/tcp" # Event Socket
-      #- "16384-32768:16384-32768/udp"   # RTP Media range
+      - "5060:5060/udp"
+      - "5060:5060/tcp"
+      - "5061:5061/tcp"
+      - "5080:5080/udp"
+      - "5080:5080/tcp"
+      - "5066:5066/tcp"
+      - "7443:7443/tcp"
+      - "8021:8021/tcp"
     healthcheck:
       test: ["CMD", "fs_cli", "-x", "status"]
       interval: 15s
@@ -80,6 +67,33 @@ services:
         reservations:
           memory: 400M
 
+  vgtpbx-eslserver:
+    image: northamerica-northeast1-docker.pkg.dev/dev-vgtpbx/vgtpbx-switch-docker/vgtpbx-eslserver:${VERSION:-latest}
+    container_name: vgtpbx-eslserver
+    network_mode: "host"
+    environment:
+      - FREESWITCH_HOST=127.0.0.1
+      - FREESWITCH_ESL_PORT=8021
+      - FREESWITCH_ESL_PASSWORD=ClueCon
+      - NEXTJS_INTERNAL_API_URL=http://10.162.0.53:3000/api/httpapihandler
+      - API_PORT=8081
+      - NODE_ENV=production
+    restart: unless-stopped
+    # NOTE: No depends_on - ESL server runs independently
+    # Provides monitoring and auto-reconnects when FreeSWITCH recovers
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:8081/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    deploy:
+      resources:
+        limits:
+          memory: 200M
+        reservations:
+          memory: 50M
+
 volumes:
   vgtpbx-freeswitch-config:
     name: vgtpbx-freeswitch-config
@@ -89,7 +103,3 @@ volumes:
     name: vgtpbx-freeswitch-storage
   vgtpbx-freeswitch-log:
     name: vgtpbx-freeswitch-log
-
-secrets:
-  fs_token:
-    environment: FS_TOKEN

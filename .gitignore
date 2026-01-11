@@ -3,3 +3,5 @@ install.sh
 docker-postgres
 
 templates
+
+docs-local
