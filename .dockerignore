@@ -1,0 +1,59 @@
+# Version control
+.git/
+.gitignore
+.github/
+
+# Documentation
+README.md
+docs/
+docs-local/
+*.md
+
+# Docker files not needed in build
+.dockerignore
+docker-compose.yml
+docker-compose.prod.yml
+Dockerfile
+
+# Development
+dev/
+.env
+.env.*
+
+# Scripts not needed in image
+push-to-gcp.sh
+*.sh
+!docker-entrypoint.sh
+
+# Node.js (if any)
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# IDE and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# CI/CD
+.gitlab-ci.yml
+.travis.yml
+Jenkinsfile
+
+# Temporary and build artifacts
+dist/
+tmp/
+*.tmp
+*.log
+*.pid
+*.seed
+*.pid.lock
+
+# Backups
+*.bak
+backups/
