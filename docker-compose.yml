@@ -26,6 +26,7 @@ services:
       - SWITCH_DB_USER=freeswitch
       - SWITCH_DB_PASSWORD=insecure12345
       - FS_STARTUP_OPTIMIZATION=true
+      - FS_USE_PGSQL=no
       - FREESWITCH_LOG_LEVEL=debug
     volumes:
       - vgtpbx-freeswitch-config:/etc/vgtpbx/freeswitch
